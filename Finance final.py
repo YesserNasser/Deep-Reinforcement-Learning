@@ -2,6 +2,8 @@
 """
 Created on Wed Aug 14 09:50:03 2019
 @author: Yesser H. Nasser
+the original code is Tom Grek 
+https://github.com/tomgrek/RL-stocktrading/blob/master/Finance%20final.ipynb
 """
 import math, random
 import gym
