@@ -19,8 +19,6 @@ import datetime as dt
 
 torch.manual_seed(51)
 import matplotlib.pyplot as plt
-# import quandl
-# quandl.ApiConfig.api_key = "xxx"
 start = dt.datetime(2009,1,1)
 end = dt.datetime(2018,8,20)
 apl_stock = web.DataReader('AAPL', 'yahoo', start, end)
