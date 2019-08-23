@@ -87,7 +87,7 @@ class TradingEnvironment():
         self.starting_cash_mean = starting_cash_mean
         self.randomize_cash_std = randomize_cash_std
         
-        self.state = torch.FloatTensor(torch.zeros(8))#.cuda()
+        self.state = torch.FloatTensor(torch.zeros(8)).cuda()
         
         self.starting_cash = max(int(np.random.normal(self.starting_cash_mean, self.randomize_cash_std)), 0.)
         
@@ -212,7 +212,7 @@ class TradingEnvironment():
         return retval
     # reset the states
     def reset(self):
-        self.state = torch.FloatTensor(torch.zeros(8))#.cuda()
+        self.state = torch.FloatTensor(torch.zeros(8)).cuda()
         self.starting_cash = max(int(np.random.normal(self.starting_cash_mean, self.randomize_cash_std)), 0.)
         self.cur_timestep = self.starting_point
         self.state[0] = max(int(np.random.normal(self.starting_shares_mean, self.randomize_shares_std)), 0.)
@@ -233,7 +233,7 @@ class Policy(nn.Module):
         self.input_layer = nn.Linear(8, 128)
         self.hidden_1 = nn.Linear(128, 128)
         self.hidden_2 = nn.Linear(32,31)
-        self.hidden_state = torch.tensor(torch.zeros(2,1,32))#.cuda()
+        self.hidden_state = torch.tensor(torch.zeros(2,1,32)).cuda()
         self.rnn = nn.GRU(128, 32, 2)
         self.action_head = nn.Linear(31, 5)
         self.value_head = nn.Linear(31, 1)
@@ -241,10 +241,10 @@ class Policy(nn.Module):
         self.rewards = []
 
     def reset_hidden(self):
-        self.hidden_state = torch.tensor(torch.zeros(2,1,32))#.cuda()
+        self.hidden_state = torch.tensor(torch.zeros(2,1,32)).cuda()
         
     def forward(self, x):
-        x = torch.tensor(x)#.cuda()
+        x = torch.tensor(x).cuda()
         x = torch.sigmoid(self.input_layer(x))
         x = torch.tanh(self.hidden_1(x))
         x, self.hidden_state = self.rnn(x.view(1,-1,128), self.hidden_state.data)
@@ -257,13 +257,13 @@ class Policy(nn.Module):
         probs, state_value = self.forward(state)
         m = Categorical(probs)
         action = m.sample()
-        if action == 1 and env.state[0] < 1: action = torch.LongTensor([2]).squeeze()#.cuda()
-        if action == 4 and env.state[1] < 1: action = torch.LongTensor([2]).squeeze()#.cuda()
+        if action == 1 and env.state[0] < 1: action = torch.LongTensor([2]).squeeze().cuda()
+        if action == 4 and env.state[1] < 1: action = torch.LongTensor([2]).squeeze().cuda()
         self.saved_actions.append((m.log_prob(action), state_value))
         return action.item()
 # =============================================================================
 env = TradingEnvironment(max_stride=4, series_length=250, starting_cash_mean=1000, randomize_cash_std=100, starting_shares_mean=100, randomize_shares_std=10)
-model = Policy()#.cuda()
+model = Policy().cuda()
 optimizer = optim.Adam(model.parameters(), lr=3e-4)
 # =============================================================================
 env.reset()
@@ -293,9 +293,9 @@ def finish_episode():
     rewards += epsilon
     
     for (log_prob, value), r in zip(saved_actions, rewards):
-        reward = torch.tensor(r - value.item())#.cuda()
+        reward = torch.tensor(r - value.item()).cuda()
         policy_losses.append(-log_prob * reward)
-        value_losses.append(F.smooth_l1_loss(value, torch.tensor([r])))#.cuda()))
+        value_losses.append(F.smooth_l1_loss(value, torch.tensor([r]).cuda()))
         
     optimizer.zero_grad()
     loss = torch.stack(policy_losses).sum() + torch.stack(value_losses).sum()
